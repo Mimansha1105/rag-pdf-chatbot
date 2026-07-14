@@ -1,0 +1,21 @@
+# Virtual Environments
+venv/
+.venv/
+
+# Environment Variables
+.env
+
+# Python Cache
+__pycache__/
+
+# Chroma DB
+chroma_db/
+
+# HuggingFace Model Cache
+models_cache/
+
+# Streamlit
+.streamlit/
+
+# Temporary Files
+temp.pdf
