@@ -61,9 +61,13 @@ background: transparent;
 /* Main container */
 
 .block-container{
+
+max-width:1100px;
+
 padding-top:2rem;
-padding-left:3rem;
-padding-right:3rem;
+
+margin:auto;
+
 }
 
 /* Title */
@@ -181,11 +185,6 @@ border-radius:15px;
 
 /* Sidebar */
 
-[data-testid="stSidebar"]{
-
-background:#111827;
-
-}
 
 /* Upload */
 
@@ -193,9 +192,11 @@ background:#111827;
 
 border:2px dashed #7C3AED;
 
-border-radius:18px;
+border-radius:20px;
 
-padding:15px;
+padding:35px;
+
+background:#111827;
 
 }
 
@@ -237,13 +238,13 @@ st.markdown(
 
 <div class="subtitle">
 
-Chat with your PDFs using Groq + LangChain + Chroma
+Upload PDFs • Ask Questions • Get Instant Answers
 
 </div>
 
 <div class="hero">
 
-🚀 Lightning Fast AI Document Assistant
+⚡ Powered by Groq + LangChain + Chroma + HuggingFace
 
 </div>
 
@@ -280,25 +281,39 @@ llm = ChatGroq(
 # Sidebar
 # ================= Upload Section =================
 
-st.markdown("## 📂 Upload your PDFs")
+left, center, right = st.columns([1,2,1])
 
-st.markdown(
-"""
-Upload one or more PDFs and start chatting with them.
+with center:
 
-Supported:
-- 📄 Research Papers
-- 📚 Books
-- 📝 Notes
-- 📘 Documentation
-"""
-)
+    st.markdown("## 📂 Upload your PDFs")
 
-uploaded_files = st.file_uploader(
-    "Drag & Drop your PDF(s) here",
-    type=["pdf"],
-    accept_multiple_files=True
-)
+    st.markdown(
+    """
+    Upload one or more PDFs and start chatting with them.
+
+    **Supported**
+
+    • 📄 Research Papers
+
+    • 📚 Books
+
+    • 📝 Notes
+
+    • 📘 Documentation
+    """
+    )
+
+    uploaded_files = st.file_uploader(
+        "Drag & Drop your PDF(s) here",
+        type=["pdf"],
+        accept_multiple_files=True
+    )
+    if uploaded_files:
+
+        st.markdown("### 📑 Uploaded Files")
+
+        for file in uploaded_files:
+           st.success(f"✅ {file.name}")
 # Process PDFs
 
 
@@ -344,7 +359,9 @@ if uploaded_files and st.session_state.vectorstore is None:
         st.balloons()
 
         st.success("🎉 PDFs processed successfully!")
-        col1,col2,col3=st.columns(3)
+
+        st.divider()
+
         st.markdown("## 📊 Document Analytics")
 
         c1, c2, c3 = st.columns(3)
