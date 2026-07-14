@@ -32,11 +32,11 @@ if not hf_token:
 
 # Streamlit Page Config
 
-
 st.set_page_config(
     page_title="PDF RAG Chatbot",
     page_icon="📄",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 st.markdown("""
 <style>
@@ -55,7 +55,7 @@ visibility:hidden;
 }
 
 header{
-visibility:hidden;
+background: transparent;
 }
 
 /* Main container */
@@ -275,48 +275,41 @@ llm = ChatGroq(
 # Initialize Embeddings
 
 
-embeddings = HuggingFaceEmbeddings(
-    model_name="sentence-transformers/all-MiniLM-L6-v2",
-    model_kwargs={"device": "cpu"},
-    encode_kwargs={"normalize_embeddings": True},
-)
+
 
 # Sidebar
-st.sidebar.markdown(
-    """
-    <h1 style='color:white; font-size:32px;'>
-    📂 Documents
-    </h1>
-    """,
-    unsafe_allow_html=True
+# ================= Upload Section =================
+
+st.markdown("## 📂 Upload your PDFs")
+
+st.markdown(
+"""
+Upload one or more PDFs and start chatting with them.
+
+Supported:
+- 📄 Research Papers
+- 📚 Books
+- 📝 Notes
+- 📘 Documentation
+"""
 )
 
-st.sidebar.markdown("---")
-
-st.sidebar.success("Upload PDFs")
-
-st.sidebar.markdown("""
-### Features
-
-- 📄 Multiple PDFs
-- 🤖 AI Answers
-- ⚡ Groq LLM
-- 🧠 HuggingFace Embeddings
-- 📚 Chroma Vector DB
-""")
-
-uploaded_files = st.sidebar.file_uploader(
-    "Choose PDF files",
-    type="pdf",
+uploaded_files = st.file_uploader(
+    "Drag & Drop your PDF(s) here",
+    type=["pdf"],
     accept_multiple_files=True
 )
-
 # Process PDFs
 
 
 if uploaded_files and st.session_state.vectorstore is None:
 
     with st.spinner("🧠 AI is reading and understanding your documents..."):
+        embeddings = HuggingFaceEmbeddings(
+         model_name="sentence-transformers/all-MiniLM-L6-v2",
+         model_kwargs={"device": "cpu"},
+         encode_kwargs={"normalize_embeddings": True},
+       )
 
         documents = []
 
