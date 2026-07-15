@@ -214,13 +214,33 @@ for key, val in defaults.items():
     if key not in st.session_state:
         st.session_state[key] = val
 
-# ============================== LLM ==============================
+# ============================== Cached Resources ==============================
+# st.cache_resource keeps these alive for the life of the container instead
+# of reloading them on every rerun. This is what actually matters on
+# Streamlit Community Cloud: the embedding model is ~80MB and gets pulled
+# from the HuggingFace Hub on first use after every cold boot / sleep-wake.
+# Caching it means that download only happens ONCE per container, not once
+# per PDF scan.
 
-llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
-    groq_api_key=groq_api_key,
-    temperature=0,  # deterministic, sticks to context instead of embellishing
-)
+@st.cache_resource(show_spinner=False)
+def load_embedder():
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={"device": "cpu"},
+        encode_kwargs={"normalize_embeddings": True},
+    )
+
+
+@st.cache_resource(show_spinner=False)
+def load_llm():
+    return ChatGroq(
+        model="llama-3.3-70b-versatile",
+        groq_api_key=groq_api_key,
+        temperature=0,  # deterministic, sticks to context instead of embellishing
+    )
+
+
+llm = load_llm()
 
 # ============================== Sidebar: Upload ==============================
 
@@ -244,6 +264,14 @@ Upload one or more PDFs and start chatting.
         "✕ and drop in a different one any time, no refresh needed.</div>",
         unsafe_allow_html=True,
     )
+
+    if "embedder_warmed" not in st.session_state:
+        st.info(
+            "⏳ First scan on a freshly started server can take a bit "
+            "longer — it's downloading the AI model once. Every scan "
+            "after that is much faster.",
+            icon="⏳",
+        )
 
     MAX_FILES = 5
     raw_uploaded_files = st.file_uploader(
@@ -280,15 +308,22 @@ def fingerprint(files):
 if uploaded_files:
     current_fingerprint = fingerprint(uploaded_files)
 
+    # First scan after a cold boot/sleep-wake also has to download the
+    # embedding model from HuggingFace, which can take noticeably longer
+    # than every scan after it (once cached, it's instant).
+    is_first_load_this_session = "embedder_warmed" not in st.session_state
+    spinner_text = (
+        "🧠 Warming up (first run on this server can take a bit longer)..."
+        if is_first_load_this_session
+        else "🧠 AI is reading and understanding your documents..."
+    )
+
     # Reprocess if this is a new/changed batch of files (fixes the bug where
     # uploading more PDFs later was silently ignored).
     if current_fingerprint != st.session_state.processed_files:
-        with st.spinner("🧠 AI is reading and understanding your documents..."):
-            embeddings = HuggingFaceEmbeddings(
-                model_name="sentence-transformers/all-MiniLM-L6-v2",
-                model_kwargs={"device": "cpu"},
-                encode_kwargs={"normalize_embeddings": True},
-            )
+        with st.spinner(spinner_text):
+            embeddings = load_embedder()
+            st.session_state.embedder_warmed = True
 
             documents = []
             tmp_paths = []
