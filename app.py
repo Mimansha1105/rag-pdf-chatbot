@@ -234,7 +234,7 @@ def load_embedder():
 @st.cache_resource(show_spinner=False)
 def load_llm():
     return ChatGroq(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         groq_api_key=groq_api_key,
         temperature=0,  # deterministic, sticks to context instead of embellishing
     )
