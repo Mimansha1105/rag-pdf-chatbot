@@ -1,6 +1,5 @@
 langchain-community
 pypdf
-bs4
 arxiv
 pymupdf
 wikipedia
@@ -8,9 +7,9 @@ langchain-text-splitters
 langchain-openai
 chromadb
 sentence_transformers
-langchain_huggingface
+langchain-huggingface
 faiss-cpu
-langchain_chroma
+langchain-chroma
 duckdb
 pandas
 openai
@@ -19,3 +18,4 @@ duckduckgo-search
 pymupdf
 arxiv
 wikipedia
+streamlit
