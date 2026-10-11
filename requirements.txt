@@ -17,5 +17,7 @@ langchain-groq
 duckduckgo-search
 pymupdf
 arxiv
+torch
 wikipedia
 streamlit
+langchain-chroma

@@ -6,7 +6,7 @@ import streamlit as st
 from dotenv import load_dotenv
 
 from langchain_groq import ChatGroq
-from langchain_huggingface import HuggingFaceEndpointEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_chroma import Chroma
 
 from langchain_community.document_loaders import PyPDFLoader
@@ -19,14 +19,9 @@ from langchain_core.output_parsers import StrOutputParser
 load_dotenv()
 
 groq_api_key = os.getenv("GROQ_API_KEY")
-hf_token = os.getenv("HF_TOKEN")
 
 if not groq_api_key:
     st.error("GROQ_API_KEY not found in .env")
-    st.stop()
-
-if not hf_token:
-    st.error("HF_TOKEN not found in .env")
     st.stop()
 
 # ============================== Page Config ==============================
@@ -221,13 +216,10 @@ for key, val in defaults.items():
 
 @st.cache_resource(show_spinner=False)
 def load_embedder():
-    # Calls Hugging Face's hosted Inference API instead of downloading the
-    # ~80MB model and running it on Streamlit Cloud's shared CPU. This is
-    # what actually removes the multi-minute delay: no local download, no
-    # local compute — just a lightweight API call per chunk.
-    return HuggingFaceEndpointEmbeddings(
-        model="sentence-transformers/all-MiniLM-L6-v2",
-        huggingfacehub_api_token=hf_token,
+    return HuggingFaceEmbeddings(
+        model_name="sentence-transformers/all-MiniLM-L6-v2",
+        model_kwargs={"device": "cpu"},
+        encode_kwargs={"normalize_embeddings": True},
     )
 
 
